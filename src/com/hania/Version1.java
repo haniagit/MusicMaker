@@ -6,46 +6,41 @@ public class Version1 {
 
     public static void main(String[] args) {
         Version1 version1 = new Version1();
-        if (args.length < 2) {
-            System.out.println("Please enter value for an instrument and note");
-        } else {
-            int instrument = Integer.parseInt(args[0]);
-            int note = Integer.parseInt(args[1]);
-            version1.play(instrument, note);
-        }
+        version1.play();
     }
 
-    public void play(int instrument, int note) {
+    public void play() {
         try {
-
             Sequencer sequencer = MidiSystem.getSequencer();
             sequencer.open();
 
             Sequence seq = new Sequence(Sequence.PPQ, 4);
             Track track = seq.createTrack();
 
-            MidiEvent event = null;
-
-            ShortMessage first = new ShortMessage();
-            first.setMessage(192, 1, instrument, 0);
-            MidiEvent changeInstrument = new MidiEvent(first, 1);
-            track.add(changeInstrument);
-
-            ShortMessage a = new ShortMessage();
-            a.setMessage(144, 1, note, 100);
-            MidiEvent noteStart = new MidiEvent(a, 1);
-            track.add(noteStart);
-
-            ShortMessage b = new ShortMessage();
-            b.setMessage(128, 1, note, 100);
-            MidiEvent noteEnd = new MidiEvent(b, 16);
-            track.add(noteEnd);
+            for(int i = 5; i < 61; i+=4){
+                track.add(createEvent(144,1,i,100,i));
+                track.add(createEvent(128,1,i,100,i+2));
+            }
 
             sequencer.setSequence(seq);
+            sequencer.setTempoInBPM(220);
             sequencer.start();
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static MidiEvent createEvent(int type, int channel, int note, int tempo, int  tact){
+        MidiEvent event = null;
+        try{
+            ShortMessage a = new ShortMessage();
+            a.setMessage(type, channel, note, tempo);
+            event = new MidiEvent(a, tact);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return event;
     }
 }
